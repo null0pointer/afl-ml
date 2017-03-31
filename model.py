@@ -12,6 +12,27 @@ def random_split(input, rate):
         second = second[:index] + second[index+1:]
     return first, second
 
+def create_weights_and_biases(layer_sizes):
+    weights = []
+    biases = []
+    for i in range(len(layer_sizes) - 2):
+        weight = create_weight(layer_sizes[i], layer_sizes[i+1])
+        bias = create_bias(layer_sizes[i+1], layer_sizes[0], tf.ones)
+        weights.append(weight)
+        biases.append(bias)
+
+    weight = create_weight(layer_sizes[-2], layer_sizes[-1])
+    bias = create_bias(layer_sizes[-1], layer_sizes[0], tf.zeros)
+    weights.append(weight)
+    biases.append(bias)
+    return weights, biases
+
+def create_weight(in_size, out_size):
+    return tf.Variable(tf.truncated_normal([in_size, out_size], stddev=0.1))
+
+def create_bias(size, divisor, init_function):
+    return tf.Variable(init_function([size])/divisor)
+
 raw_inputs = fu.read_csv(fu.csv_inputs_path())
 raw_train_ins, raw_test_ins = random_split(raw_inputs, 0.8)
 
@@ -48,16 +69,19 @@ Y_ = tf.placeholder(tf.float32, [None, 2])
 lr = tf.placeholder(tf.float32)
 pkeep = tf.placeholder(tf.float32)
 
-layer_sizes = [30, 20, 10]
+# layer_sizes = [30, 20, 10]
+#
+# W1 = tf.Variable(tf.truncated_normal([input_size, layer_sizes[0]], stddev=0.1))
+# B1 = tf.Variable(tf.ones([layer_sizes[0]])/output_size)
+# W2 = tf.Variable(tf.truncated_normal([layer_sizes[0], layer_sizes[1]], stddev=0.1))
+# B2 = tf.Variable(tf.ones([layer_sizes[1]])/output_size)
+# W3 = tf.Variable(tf.truncated_normal([layer_sizes[1], layer_sizes[2]], stddev=0.1))
+# B3 = tf.Variable(tf.ones([layer_sizes[2]])/output_size)
+# W4 = tf.Variable(tf.truncated_normal([layer_sizes[2], output_size], stddev=0.1))
+# B4 = tf.Variable(tf.zeros([output_size])/output_size)
 
-W1 = tf.Variable(tf.truncated_normal([input_size, layer_sizes[0]], stddev=0.1))
-B1 = tf.Variable(tf.ones([layer_sizes[0]])/output_size)
-W2 = tf.Variable(tf.truncated_normal([layer_sizes[0], layer_sizes[1]], stddev=0.1))
-B2 = tf.Variable(tf.ones([layer_sizes[1]])/output_size)
-W3 = tf.Variable(tf.truncated_normal([layer_sizes[1], layer_sizes[2]], stddev=0.1))
-B3 = tf.Variable(tf.ones([layer_sizes[2]])/output_size)
-W4 = tf.Variable(tf.truncated_normal([layer_sizes[2], output_size], stddev=0.1))
-B4 = tf.Variable(tf.zeros([output_size]))
+layer_sizes = [input_size, 30, 20, 10, output_size]
+weights, biases = create_weights_and_biases(layer_sizes)
 
 Y1 = tf.nn.relu(tf.matmul(X, W1) + B1)
 Y1 = tf.nn.dropout(Y1, pkeep)
