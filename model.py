@@ -17,26 +17,29 @@ def create_weights_and_biases(layer_sizes):
     biases = []
     for i in range(len(layer_sizes) - 2):
         weight = create_weight(layer_sizes[i], layer_sizes[i+1])
-        bias = create_bias(layer_sizes[i+1], layer_sizes[0], tf.ones)
+        bias = tf.Variable(tf.ones([layer_sizes[i+1]])/layer_sizes[0])
         weights.append(weight)
         biases.append(bias)
 
     weight = create_weight(layer_sizes[-2], layer_sizes[-1])
-    bias = create_bias(layer_sizes[-1], layer_sizes[0], tf.zeros)
+    bias = tf.Variable(tf.zeros([layer_sizes[-1]])/layer_sizes[0])
     weights.append(weight)
     biases.append(bias)
     return weights, biases
 
+def link_weights_and_biases(inputs, weights, biases, pkeep):
+    Y = tf.matmul(inputs, weights[0]) + biases[0]
+    for i in range(1, len(weights)):
+        Y = tf.nn.relu(Y)
+        Y = tf.nn.dropout(Y, pkeep)
+        Y = tf.matmul(Y, weights[i]) + biases[i]
+    return Y
+
 def create_weight(in_size, out_size):
     return tf.Variable(tf.truncated_normal([in_size, out_size], stddev=0.1))
 
-def create_bias(size, divisor, init_function):
-    return tf.Variable(init_function([size])/divisor)
-
 raw_inputs = fu.read_csv(fu.csv_inputs_path())
 raw_train_ins, raw_test_ins = random_split(raw_inputs, 0.8)
-
-print(len(raw_inputs))
 
 train_inputs = []
 train_labels = []
@@ -58,9 +61,6 @@ for input in raw_test_ins:
     ins = [float(x) for x in input[1:]]
     test_inputs.append(ins)
 
-print(len(train_inputs))
-print(len(test_inputs))
-
 input_size = len(train_inputs[0])
 output_size = len(train_labels[0])
 
@@ -69,30 +69,10 @@ Y_ = tf.placeholder(tf.float32, [None, 2])
 lr = tf.placeholder(tf.float32)
 pkeep = tf.placeholder(tf.float32)
 
-# layer_sizes = [30, 20, 10]
-#
-# W1 = tf.Variable(tf.truncated_normal([input_size, layer_sizes[0]], stddev=0.1))
-# B1 = tf.Variable(tf.ones([layer_sizes[0]])/output_size)
-# W2 = tf.Variable(tf.truncated_normal([layer_sizes[0], layer_sizes[1]], stddev=0.1))
-# B2 = tf.Variable(tf.ones([layer_sizes[1]])/output_size)
-# W3 = tf.Variable(tf.truncated_normal([layer_sizes[1], layer_sizes[2]], stddev=0.1))
-# B3 = tf.Variable(tf.ones([layer_sizes[2]])/output_size)
-# W4 = tf.Variable(tf.truncated_normal([layer_sizes[2], output_size], stddev=0.1))
-# B4 = tf.Variable(tf.zeros([output_size])/output_size)
-
 layer_sizes = [input_size, 30, 20, 10, output_size]
 weights, biases = create_weights_and_biases(layer_sizes)
 
-Y1 = tf.nn.relu(tf.matmul(X, W1) + B1)
-Y1 = tf.nn.dropout(Y1, pkeep)
-
-Y2 = tf.nn.relu(tf.matmul(Y1, W2) + B2)
-Y2 = tf.nn.dropout(Y2, pkeep)
-
-Y3 = tf.nn.relu(tf.matmul(Y2, W3) + B3)
-Y3 = tf.nn.dropout(Y3, pkeep)
-
-Ylogits = tf.matmul(Y3, W4) + B4
+Ylogits = link_weights_and_biases(X, weights, biases, pkeep)
 Y = tf.nn.softmax(Ylogits)
 
 cross_entropy = tf.nn.softmax_cross_entropy_with_logits(logits=Ylogits, labels=Y_)
