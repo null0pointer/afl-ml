@@ -27,11 +27,13 @@ def create_weights_and_biases(layer_sizes):
     biases.append(bias)
     return weights, biases
 
-def link_weights_and_biases(inputs, weights, biases, pkeep):
+def link_weights_and_biases(inputs, weights, biases, activation=None, pkeep=None):
     Y = tf.matmul(inputs, weights[0]) + biases[0]
     for i in range(1, len(weights)):
-        Y = tf.nn.relu(Y)
-        Y = tf.nn.dropout(Y, pkeep)
+        if not activation == None:
+            Y = activation(Y)
+        if not pkeep == None:
+            Y = tf.nn.dropout(Y, pkeep)
         Y = tf.matmul(Y, weights[i]) + biases[i]
     return Y
 
@@ -69,10 +71,10 @@ Y_ = tf.placeholder(tf.float32, [None, 2])
 lr = tf.placeholder(tf.float32)
 pkeep = tf.placeholder(tf.float32)
 
-layer_sizes = [input_size, 30, 20, 10, output_size]
+layer_sizes = [input_size, input_size, input_size, input_size, output_size]
 weights, biases = create_weights_and_biases(layer_sizes)
 
-Ylogits = link_weights_and_biases(X, weights, biases, pkeep)
+Ylogits = link_weights_and_biases(X, weights, biases, activation=tf.nn.relu, pkeep=pkeep)
 Y = tf.nn.softmax(Ylogits)
 
 cross_entropy = tf.nn.softmax_cross_entropy_with_logits(logits=Ylogits, labels=Y_)
@@ -90,13 +92,17 @@ sess.run(init)
 for i in range(10000):
     max_lr = 0.003
     min_lr = 0.0001
-    decay_period = 200
+    decay_period = 4000
     learning_rate = min_lr + (max_lr - min_lr) * math.exp(-i/decay_period)
 
-    a, c = sess.run([accuracy, cross_entropy], {X: train_inputs, Y_: train_labels, pkeep: 1.0})
-    print("Epoch: " + str(i) + "\n\tTrain Accuracy: " + str(a) + " Loss: " + str(c))
+    if i % 100 == 0 or i == 9999:
+        a, c = sess.run([accuracy, cross_entropy], {X: train_inputs, Y_: train_labels, pkeep: 1.0})
+        print("Epoch: " + str(i) + "\n\tTrain Accuracy: " + str(a) + " Loss: " + str(c))
 
-    a, c = sess.run([accuracy, cross_entropy], {X: test_inputs, Y_: test_labels, pkeep: 1.0})
-    print("\t Test Accuracy: " + str(a) + " Loss: " + str(c))
+        a, c, y = sess.run([accuracy, cross_entropy, Y], {X: test_inputs, Y_: test_labels, pkeep: 1.0})
+        print("\t Test Accuracy: " + str(a) + " Loss: " + str(c))
+        print(test_inputs[0])
+        print(test_labels[0])
+        print(y[0])
 
-    sess.run(train_step, {X:train_inputs, Y_:train_labels, pkeep:0.75, lr:learning_rate})
+    sess.run(train_step, {X:train_inputs, Y_:train_labels, pkeep:0.65, lr:learning_rate})
