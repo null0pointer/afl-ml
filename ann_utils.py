@@ -29,6 +29,13 @@ def link_weights_and_biases(inputs, weights, biases, activation=None, pkeep=None
 def create_weight(in_size, out_size):
     return tf.Variable(tf.truncated_normal([in_size, out_size], stddev=0.1))
 
+def l2_regularize_weights(weights):
+    loss = tf.nn.l2_loss(weights[-1])
+    for i in range(len(weights) - 1):
+        weight = weights[i]
+        loss = loss + tf.nn.l2_loss(weight)
+    return loss
+
 def minibatch(data, start, length):
     start_index = start % len(data)
     end_index = start_index + length

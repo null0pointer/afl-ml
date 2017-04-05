@@ -6,7 +6,7 @@ team_details_key = 'team'
 team_key = 'teamAbbr'
 stats_key = 'stats'
 totals_key = 'totals'
-totals_keys = ['goals', 'behinds', 'kicks', 'handballs', 'marks', 'bounces', 'tackles', 'contestedPossessions', 'uncontestedPossessions', 'inside50s', 'marksInside50', 'contestedMarks', 'hitouts', 'onePercenters', 'disposalEfficiency', 'clangers', 'freesFor', 'freesAgainst', 'rebound50s', 'goalAssists', 'goalAccuracy']
+totals_keys = ['goals', 'behinds', 'kicks', 'handballs', 'marks', 'bounces', 'tackles', 'contestedPossessions', 'uncontestedPossessions', 'inside50s', 'marksInside50', 'contestedMarks', 'hitouts', 'onePercenters', 'disposalEfficiency', 'clangers', 'freesFor', 'freesAgainst', 'rebound50s']#, 'goalAssists', 'goalAccuracy']
 clearances_key = 'clearances'
 clearances_keys = ['centreClearances', 'stoppageClearances']
 

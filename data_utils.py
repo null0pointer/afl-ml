@@ -1,3 +1,5 @@
+from random import randrange
+
 def random_split(input, rate):
     first = []
     second = input
