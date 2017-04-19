@@ -1,5 +1,6 @@
 import tensorflow as tf
 import math
+import os
 
 def create_weights_and_biases(layer_sizes):
     weights = []

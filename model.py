@@ -15,14 +15,14 @@ test_inputs, test_labels = du.split_inputs_and_labels(raw_test_ins, 0, 2)
 input_size = len(train_inputs[0])
 output_size = len(train_labels[0])
 
-X = tf.placeholder(tf.float32, [None, input_size])              # Inputs
-Y_ = tf.placeholder(tf.float32, [None, 2])                      # Expected outputs
+X = tf.placeholder(tf.float32, [None, input_size], name='X')              # Inputs
+Y_ = tf.placeholder(tf.float32, [None, 2], name='Y_')                      # Expected outputs
 lr = tf.placeholder(tf.float32)                                 # Learning rate
 
 # Dropout keep probability
 # DROPOUT_KEEP_RATE = 0.75
 DROPOUT_KEEP_RATE = 1.0
-pkeep = tf.placeholder(tf.float32)
+pkeep = tf.placeholder(tf.float32, name='pkeep')
 
 layer_sizes = [input_size, 30, 20, 10, output_size]             # ANN architecture
 weights, biases = ann.create_weights_and_biases(layer_sizes)    # The weight and bias matrices
@@ -32,10 +32,10 @@ Y = tf.nn.softmax(Ylogits)                                      # Output class p
 
 cross_entropy = tf.nn.softmax_cross_entropy_with_logits(logits=Ylogits, labels=Y_)
 cross_entropy = tf.reduce_mean(cross_entropy)                    # Loss function
-cross_entropy = tf.reduce_mean(cross_entropy + 0.01 * ann.l2_regularize_weights(weights))
+cross_entropy = tf.reduce_mean(cross_entropy + 0.01 * ann.l2_regularize_weights(weights), name='cross_entropy')
 
 correct_prediction = tf.equal(tf.argmax(Y, 1), tf.argmax(Y_, 1))
-accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32), name='accuracy')
 
 train_step = tf.train.AdamOptimizer(lr).minimize(cross_entropy)
 # train_step = tf.train.GradientDescentOptimizer(lr).minimize(cross_entropy)
@@ -49,6 +49,8 @@ train_accuracies = []
 test_accuracies = []
 train_loss = []
 test_loss = []
+
+saver = tf.train.Saver(max_to_keep=1)
 
 BATCH_SIZE = 1000
 ITERATIONS = 4000
@@ -75,6 +77,8 @@ for i in range(ITERATIONS):
         print("\t learning_rate: " + str(learning_rate))
 
     sess.run(train_step, {X:train_batch_inputs, Y_:train_batch_labels, pkeep:DROPOUT_KEEP_RATE, lr:learning_rate})
+
+saver.save(sess, 'models/afl')
 
 plt.subplot(1,2,1)
 plt.plot(xaxis, train_accuracies, 'blue')
