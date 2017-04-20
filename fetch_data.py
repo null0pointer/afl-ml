@@ -1,6 +1,6 @@
 import requests
 
-TOKEN = '1973c9518bde816d8f41c3f3ea100406'
+TOKEN = 'f4a5b3f0026cdbd96fbb3bc1c5e3a57d'
 
 def get_round_url(y, r):
     url = 'http://www.afl.com.au/api/cfs/afl/statsCentre/teams'
@@ -31,7 +31,7 @@ def save_json_text(json_text, outpath):
     f.close()
 
 def fetch_data(token):
-    for year in range(2001, 2017):
+    for year in range(2001, 2018):
         round_num = 1
         while True:
             print('Fetching season ' + str(year) + ' round ' + str(round_num))

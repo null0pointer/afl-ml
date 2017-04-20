@@ -28,7 +28,7 @@ layer_sizes = [input_size, 30, 20, 10, output_size]             # ANN architectu
 weights, biases = ann.create_weights_and_biases(layer_sizes)    # The weight and bias matrices
 
 Ylogits = ann.link_weights_and_biases(X, weights, biases, activation=tf.nn.relu, pkeep=pkeep)
-Y = tf.nn.softmax(Ylogits)                                      # Output class probabilities
+Y = tf.nn.softmax(Ylogits, name='Y')                                      # Output class probabilities
 
 cross_entropy = tf.nn.softmax_cross_entropy_with_logits(logits=Ylogits, labels=Y_)
 cross_entropy = tf.reduce_mean(cross_entropy)                    # Loss function
