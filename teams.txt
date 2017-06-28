@@ -1,0 +1,18 @@
+Adelaide Crows  - ADEL
+Brisbane Lions  - BL
+Essendon        - ESS
+Eagles          - WCE
+Fremantle       - FRE
+Hawthorn        - HAW
+Port            - PORT
+Carlton         - CARL
+Geelong         - GEEL
+GWS             - GWS
+Goldcoast       - GCFC
+St. Kilda       - STK
+Sydney          - SYD
+Richmond        - RICH
+Collingwood     - COLL
+Bulldogs        - WB
+Melbourne       - MELB
+North Melbourne - NMFC

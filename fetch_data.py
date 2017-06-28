@@ -1,6 +1,6 @@
 import requests
 
-TOKEN = 'f4a5b3f0026cdbd96fbb3bc1c5e3a57d'
+TOKEN = 'f50b8b489ee04999b779b44a65f1989c'
 
 def get_round_url(y, r):
     url = 'http://www.afl.com.au/api/cfs/afl/statsCentre/teams'
