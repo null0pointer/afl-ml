@@ -35,6 +35,27 @@ def update_teams_seen(team, teams_seen):
     else:
         teams_seen[team] = 1
 
+def elo_for_team(team, elos):
+    if team in elos:
+        return elos[team]
+    else:
+        return 1200
+
+def update_elos(winning_team, losing_team, elos):
+    winning_elo = elo_for_team(winning_team, elos)
+    losing_elo = elo_for_team(losing_team, elos)
+    new_winning_elo, new_losing_elo = new_elo(winning_elo, losing_elo)
+    elos[winning_team] = new_winning_elo
+    elos[losing_team] = new_losing_elo
+
+def new_elo(winner, loser):
+    new_winner = winner + 32 * (1 - expected_score(winner, loser))
+    new_loser = loser + 32 * (0 - expected_score(loser, winner))
+    return (new_winner, new_loser)
+
+def expected_score(first, second):
+    return 1 / (1 + (10**((second-first) / 400)))
+
 def build_inputs():
     matches = fu.read_csv(fu.csv_matches_path())
     matches = matches[1:]
@@ -48,6 +69,7 @@ def build_inputs():
     input_lines = []
 
     teams_seen = {}
+    elos = {}
 
     for match in matches:
         s = match[SEASON_INDEX]
@@ -57,8 +79,6 @@ def build_inputs():
 
         update_teams_seen(home_team, teams_seen)
         update_teams_seen(away_team, teams_seen)
-        if teams_seen[home_team] < 10 or teams_seen[away_team] < 10:
-            continue
 
         home_round_stats_index = round_team_stats_index(s, r, home_team, rounds)
         away_round_stats_index = round_team_stats_index(s, r, away_team, rounds)
@@ -78,13 +98,22 @@ def build_inputs():
         if home_score == away_score:
             continue
 
+        if teams_seen[home_team] < 10 or teams_seen[away_team] < 10:
+            continue
+
         winner = '1' if home_score > away_score else '0'
         home_emas = emas[home_ema_index][VALUES_START_INDEX:]
         away_emas = emas[away_ema_index][VALUES_START_INDEX:]
 
-        input_lines.append([winner] + home_emas + away_emas)
+        input_lines.append([winner] + home_emas + [str(elo_for_team(home_team, elos))] + away_emas + [str(elo_for_team(away_team, elos))])
+
+        if home_score > away_score:
+            update_elos(home_team, away_team, elos)
+        else:
+            update_elos(away_team, home_team, elos)
 
     fu.write_csv(input_lines, fu.csv_inputs_path())
+    print(elos)
 
 if __name__ == "__main__":
     build_inputs()
